@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>G·KENNY OS — NEURAL CORE</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #020408;
+    --surface: #060d14;
+    --cyan: #00fff9;
+    --pink: #ff006e;
+    --yellow: #f9f002;
+    --green: #00ff41;
+    --dim: #0a1a2e;
+    --border-cyan: rgba(0,255,249,0.2);
+    --border-pink: rgba(255,0,110,0.2);
+    --text: #c8e6ff;
+    --muted: #2a4a6a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px);
+    pointer-events: none;
+    z-index: 9999;
+  }
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: linear-gradient(rgba(0,255,249,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(0,255,249,0.04) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .container { position: relative; z-index: 1; max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+  header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border-cyan);
+    position: relative;
+  }
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0;
+    width: 200px; height: 1px;
+    background: linear-gradient(90deg, var(--cyan), transparent);
+    box-shadow: 0 0 10px var(--cyan);
+  }
+  .logo-eyebrow { font-size: 10px; color: var(--cyan); letter-spacing: 4px; opacity: 0.6; margin-bottom: 4px; }
+  .logo-main {
+    font-family: 'Orbitron', monospace;
+    font-size: 36px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: var(--cyan);
+    text-shadow: 0 0 30px rgba(0,255,249,0.6), 0 0 60px rgba(0,255,249,0.3);
+    animation: flicker 8s infinite;
+  }
+  .logo-sub { font-size: 11px; color: var(--pink); letter-spacing: 3px; text-shadow: 0 0 10px var(--pink); margin-top: 4px; }
+  @keyframes flicker { 0%,95%,100%{opacity:1} 96%{opacity:0.8} 97%{opacity:1} 98%{opacity:0.6} 99%{opacity:1} }
+  .header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; }
+  .online-badge { display: flex; align-items: center; gap: 8px; font-size: 11px; color: var(--green); text-shadow: 0 0 10px var(--green); letter-spacing: 2px; }
+  .dot-blink { width: 8px; height: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 8px var(--green), 0 0 20px var(--green); animation: blink 1.5s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  .sys-time { font-size: 10px; color: var(--muted); letter-spacing: 2px; }
+
+  .ticker { background: rgba(0,255,249,0.03); border-top: 1px solid var(--border-cyan); border-bottom: 1px solid var(--border-cyan); padding: 8px 0; margin-bottom: 32px; overflow: hidden; white-space: nowrap; }
+  .ticker-inner { display: inline-block; animation: ticker 25s linear infinite; font-size: 10px; color: var(--muted); letter-spacing: 3px; }
+  @keyframes ticker { from{transform:translateX(100vw)} to{transform:translateX(-100%)} }
+
+  .config-panel {
+    border: 1px solid var(--border-cyan);
+    background: var(--surface);
+    padding: 24px;
+    margin-bottom: 32px;
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 20px) 0, 100% 20px, 100% 100%, 0 100%);
+  }
+  .config-panel::before { content: '// CONFIG_NODE'; position: absolute; top: -1px; left: 20px; font-size: 10px; color: var(--cyan); background: var(--bg); padding: 0 8px; letter-spacing: 2px; }
+  .config-row { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+  .config-field { flex: 1; min-width: 200px; }
+  .config-field label { display: block; font-size: 10px; color: var(--cyan); letter-spacing: 2px; margin-bottom: 8px; opacity: 0.7; }
+  .config-field input {
+    width: 100%;
+    background: rgba(0,255,249,0.03);
+    border: 1px solid var(--border-cyan);
+    color: var(--cyan);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    padding: 10px 14px;
+    outline: none;
+    transition: all 0.2s;
+  }
+  .config-field input:focus { border-color: var(--cyan); box-shadow: 0 0 15px rgba(0,255,249,0.1); }
+  .connect-btn {
+    background: transparent;
+    border: 1px solid var(--cyan);
+    color: var(--cyan);
+    font-family: 'Orbitron', monospace;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 10px 24px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    transition: all 0.2s;
+    white-space: nowrap;
+    clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  }
+  .connect-btn:hover { background: rgba(0,255,249,0.1); box-shadow: 0 0 20px rgba(0,255,249,0.3); text-shadow: 0 0 10px var(--cyan); }
+
+  .stats-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 32px; }
+  .stat-card {
+    border: 1px solid var(--border-cyan);
+    background: var(--surface);
+    padding: 20px;
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%);
+  }
+  .stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, var(--cyan), transparent); }
+  .stat-label { font-size: 9px; color: var(--muted); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 10px; }
+  .stat-value { font-family: 'Orbitron', monospace; font-size: 36px; font-weight: 900; color: var(--cyan); text-shadow: 0 0 20px rgba(0,255,249,0.5); line-height: 1; }
+  .stat-unit { font-size: 10px; color: var(--muted); letter-spacing: 2px; margin-top: 4px; }
+
+  .section-title { font-size: 10px; color: var(--pink); letter-spacing: 4px; text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; text-shadow: 0 0 10px var(--pink); }
+  .section-title::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, var(--border-pink), transparent); }
+
+  .agents-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 32px; }
+  .agent-card {
+    border: 1px solid var(--border-cyan);
+    background: var(--surface);
+    padding: 20px 24px;
+    position: relative;
+    clip-path: polygon(0 0, calc(100% - 16px) 0, 100% 16px, 100% 100%, 16px 100%, 0 calc(100% - 16px));
+    animation: cardIn 0.4s ease forwards;
+    opacity: 0;
+    transition: border-color 0.3s;
+    overflow: hidden;
+  }
+  .agent-card:hover { border-color: rgba(0,255,249,0.4); }
+  .agent-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px; }
+  .agent-card.high::before { background: linear-gradient(90deg, var(--cyan), transparent); }
+  .agent-card.mid::before { background: linear-gradient(90deg, var(--yellow), transparent); }
+  .agent-card.low::before { background: linear-gradient(90deg, var(--pink), transparent); }
+  @keyframes cardIn { from{opacity:0;transform:translateX(-10px)} to{opacity:1;transform:translateX(0)} }
+
+  .agent-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .agent-id { font-size: 9px; color: var(--muted); letter-spacing: 2px; margin-bottom: 4px; }
+  .agent-name { font-family: 'Orbitron', monospace; font-size: 20px; font-weight: 700; letter-spacing: 2px; }
+  .agent-card.high .agent-name { color: var(--cyan); text-shadow: 0 0 15px rgba(0,255,249,0.4); }
+  .agent-card.mid .agent-name { color: var(--yellow); text-shadow: 0 0 15px rgba(249,240,2,0.4); }
+  .agent-card.low .agent-name { color: var(--pink); text-shadow: 0 0 15px rgba(255,0,110,0.4); }
+
+  .score-block { text-align: right; }
+  .score-num { font-family: 'Orbitron', monospace; font-size: 40px; font-weight: 900; line-height: 1; }
+  .agent-card.high .score-num { color: var(--cyan); text-shadow: 0 0 20px rgba(0,255,249,0.6); }
+  .agent-card.mid .score-num { color: var(--yellow); text-shadow: 0 0 20px rgba(249,240,2,0.6); }
+  .agent-card.low .score-num { color: var(--pink); text-shadow: 0 0 20px rgba(255,0,110,0.6); }
+  .score-label { font-size: 9px; color: var(--muted); letter-spacing: 2px; }
+
+  .progress-track { height: 4px; background: rgba(255,255,255,0.05); margin-bottom: 14px; }
+  .progress-fill { height: 100%; width: 0%; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); position: relative; }
+  .agent-card.high .progress-fill { background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+  .agent-card.mid .progress-fill { background: var(--yellow); box-shadow: 0 0 10px var(--yellow); }
+  .agent-card.low .progress-fill { background: var(--pink); box-shadow: 0 0 10px var(--pink); }
+  .progress-fill::after { content: ''; position: absolute; right: 0; top: -2px; width: 3px; height: 8px; background: white; box-shadow: 0 0 8px white; }
+
+  .agent-bottom { display: flex; justify-content: space-between; align-items: center; }
+  .status-tag { font-size: 9px; padding: 3px 10px; letter-spacing: 2px; text-transform: uppercase; border: 1px solid; clip-path: polygon(4px 0, 100% 0, calc(100% - 4px) 100%, 0 100%); }
+  .status-tag.ok { color: var(--green); border-color: rgba(0,255,65,0.3); background: rgba(0,255,65,0.05); }
+  .status-tag.warning { color: var(--yellow); border-color: rgba(249,240,2,0.3); background: rgba(249,240,2,0.05); }
+  .status-tag.critical { color: var(--pink); border-color: rgba(255,0,110,0.3); background: rgba(255,0,110,0.05); animation: tagPulse 2s infinite; }
+  @keyframes tagPulse { 0%,100%{box-shadow:none} 50%{box-shadow:0 0 10px rgba(255,0,110,0.3)} }
+  .agent-time { font-size: 9px; color: var(--muted); letter-spacing: 1px; }
+  .agent-notes { margin-top: 10px; font-size: 10px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; border-top: 1px solid rgba(255,255,255,0.04); padding-top: 10px; }
+
+  .footer { display: flex; justify-content: space-between; align-items: center; padding-top: 24px; border-top: 1px solid var(--border-cyan); position: relative; }
+  .footer::before { content: ''; position: absolute; top: -1px; left: 0; width: 120px; height: 1px; background: var(--pink); box-shadow: 0 0 8px var(--pink); }
+  .footer-text { font-size: 10px; color: var(--muted); letter-spacing: 2px; }
+  .footer-text span { color: var(--cyan); }
+  .refresh-btn { background: transparent; border: 1px solid var(--border-pink); color: var(--pink); font-family: 'Share Tech Mono', monospace; font-size: 10px; padding: 8px 16px; cursor: pointer; letter-spacing: 2px; transition: all 0.2s; clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px)); }
+  .refresh-btn:hover { background: rgba(255,0,110,0.1); box-shadow: 0 0 15px rgba(255,0,110,0.2); text-shadow: 0 0 8px var(--pink); }
+  .loading { grid-column: 1/-1; text-align: center; padding: 60px; color: var(--muted); font-size: 11px; letter-spacing: 3px; }
+
+  @media (max-width: 640px) {
+    .agents-grid, .stats-row { grid-template-columns: 1fr; }
+    .logo-main { font-size: 24px; }
+    .config-row { flex-direction: column; }
+    header { flex-direction: column; gap: 16px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div>
+      <div class="logo-eyebrow">// SISTEMA OPERATIVO DE IA //</div>
+      <div class="logo-main">G·KENNY OS</div>
+      <div class="logo-sub">NEURAL CORE — MONITOR v1.0</div>
+    </div>
+    <div class="header-right">
+      <div class="online-badge">
+        <div class="dot-blink"></div>
+        <span id="system-status">INICIALIZANDO</span>
+      </div>
+      <div class="sys-time" id="sys-time">--:--:-- UTC</div>
+    </div>
+  </header>
+
+  <div class="ticker">
+    <div class="ticker-inner" id="ticker-text">
+      &nbsp;&nbsp;&nbsp;G·KENNY OS NEURAL CORE ONLINE &nbsp;///&nbsp; AGENTES MONITOREADOS EN TIEMPO REAL &nbsp;///&nbsp; SENTINEL ACTIVO &nbsp;///&nbsp; WORKFLOWS NOCTURNOS OPERATIVOS &nbsp;///&nbsp; SISTEMA AUTÓNOMO &nbsp;///&nbsp;
+    </div>
+  </div>
+
+  <div class="config-panel" id="config-panel">
+    <div class="config-row">
+      <div class="config-field">
+        <label>// SUPABASE_URL</label>
+        <input type="text" id="supabase-url" placeholder="https://xxxx.supabase.co" />
+      </div>
+      <div class="config-field">
+        <label>// ANON_KEY</label>
+        <input type="password" id="supabase-key" placeholder="eyJhbGciOi..." />
+      </div>
+      <button class="connect-btn" onclick="connectAndLoad()">INICIAR</button>
+    </div>
+  </div>
+
+  <div class="stats-row" id="stats-row" style="display:none">
+    <div class="stat-card">
+      <div class="stat-label">// AGENTES_TOTAL</div>
+      <div class="stat-value" id="stat-total">—</div>
+      <div class="stat-unit">UNIDADES ACTIVAS</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">// SCORE_PROMEDIO</div>
+      <div class="stat-value" id="stat-avg">—</div>
+      <div class="stat-unit">PERFORMANCE GLOBAL</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">// ALERTAS_CRÍTICAS</div>
+      <div class="stat-value" id="stat-critical" style="color:var(--pink);text-shadow:0 0 20px rgba(255,0,110,0.5)">—</div>
+      <div class="stat-unit">BAJO UMBRAL 60</div>
+    </div>
+  </div>
+
+  <div id="agents-section" style="display:none">
+    <div class="section-title">// ESTADO DE AGENTES</div>
+    <div class="agents-grid" id="agents-grid">
+      <div class="loading">CARGANDO NEURAL NETWORK...</div>
+    </div>
+  </div>
+
+  <div class="footer" id="footer" style="display:none">
+    <div class="footer-text">LAST_SYNC: <span id="last-update-time">—</span></div>
+    <button class="refresh-btn" onclick="loadData()">↻ RE-SYNC</button>
+  </div>
+
+</div>
+<script>
+  let SUPABASE_URL = '', SUPABASE_KEY = '';
+
+  setInterval(() => {
+    const now = new Date();
+    document.getElementById('sys-time').textContent = now.toUTCString().split(' ')[4] + ' UTC';
+  }, 1000);
+
+  try {
+    const saved = localStorage.getItem('gkenny-config');
+    if (saved) {
+      const cfg = JSON.parse(saved);
+      SUPABASE_URL = cfg.url; SUPABASE_KEY = cfg.key;
+      document.getElementById('supabase-url').value = SUPABASE_URL;
+      document.getElementById('supabase-key').value = SUPABASE_KEY;
+      loadData();
+    }
+  } catch(e) {}
+
+  function connectAndLoad() {
+    SUPABASE_URL = document.getElementById('supabase-url').value.trim();
+    SUPABASE_KEY = document.getElementById('supabase-key').value.trim();
+    if (!SUPABASE_URL || !SUPABASE_KEY) return;
+    try { localStorage.setItem('gkenny-config', JSON.stringify({ url: SUPABASE_URL, key: SUPABASE_KEY })); } catch(e) {}
+    loadData();
+  }
+
+  async function loadData() {
+    try {
+      const res = await fetch(`${SUPABASE_URL}/rest/v1/system_status?select=*&order=score.desc`, {
+        headers: { 'apikey': SUPABASE_KEY, 'Authorization': `Bearer ${SUPABASE_KEY}` }
+      });
+      if (!res.ok) throw new Error('CONEXIÓN FALLIDA');
+      renderDashboard(await res.json());
+    } catch(err) {
+      document.getElementById('system-status').textContent = 'ERROR: ' + err.message;
+    }
+  }
+
+  function getLevel(s) { return s >= 80 ? 'high' : s >= 60 ? 'mid' : 'low'; }
+  function getStatus(s) {
+    if (s >= 80) return { cls: 'ok', label: '● ONLINE' };
+    if (s >= 60) return { cls: 'warning', label: '▲ ALERTA' };
+    return { cls: 'critical', label: '✕ CRÍTICO' };
+  }
+  function formatTime(ts) {
+    if (!ts) return 'N/A';
+    const d = new Date(ts);
+    return d.toLocaleDateString('es', { month:'short', day:'numeric' }) + ' ' + d.toLocaleTimeString('es', { hour:'2-digit', minute:'2-digit' });
+  }
+
+  function renderDashboard(agents) {
+    document.getElementById('config-panel').style.display = 'none';
+    document.getElementById('stats-row').style.display = 'grid';
+    document.getElementById('agents-section').style.display = 'block';
+    document.getElementById('footer').style.display = 'flex';
+
+    const total = agents.length;
+    const avg = total ? Math.round(agents.reduce((s,a) => s+(a.score||0), 0)/total) : 0;
+    const critical = agents.filter(a => (a.score||0) < 60).length;
+
+    document.getElementById('stat-total').textContent = total;
+    document.getElementById('stat-avg').textContent = avg;
+    document.getElementById('stat-critical').textContent = critical;
+    document.getElementById('system-status').textContent = critical === 0 ? 'TODOS LOS SISTEMAS OK' : `ALERTA: ${critical} CRÍTICO${critical>1?'S':''}`;
+
+    const names = agents.map(a => `${a.agent}: ${a.score}`).join(' &nbsp;///&nbsp; ');
+    document.getElementById('ticker-text').innerHTML = `&nbsp;&nbsp;&nbsp;${names}&nbsp;&nbsp;&nbsp;///&nbsp;&nbsp;&nbsp;${names}&nbsp;&nbsp;&nbsp;`;
+
+    const grid = document.getElementById('agents-grid');
+    grid.innerHTML = '';
+    agents.forEach((agent, i) => {
+      const score = agent.score || 0;
+      const level = getLevel(score);
+      const { cls, label } = getStatus(score);
+      const card = document.createElement('div');
+      card.className = `agent-card ${level}`;
+      card.style.animationDelay = `${i * 0.07}s`;
+      card.innerHTML = `
+        <div class="agent-top">
+          <div>
+            <div class="agent-id">// UNIT_${String(i+1).padStart(2,'0')}</div>
+            <div class="agent-name">${agent.agent}</div>
+          </div>
+          <div class="score-block">
+            <div class="score-num">${score}</div>
+            <div class="score-label">SCORE</div>
+          </div>
+        </div>
+        <div class="progress-track">
+          <div class="progress-fill" data-width="${score}" style="width:0%"></div>
+        </div>
+        <div class="agent-bottom">
+          <div class="status-tag ${cls}">${label}</div>
+          <div class="agent-time">${formatTime(agent.last_run)}</div>
+        </div>
+        ${agent.notas ? `<div class="agent-notes">> ${agent.notas}</div>` : ''}
+      `;
+      grid.appendChild(card);
+    });
+
+    setTimeout(() => {
+      document.querySelectorAll('.progress-fill').forEach(b => b.style.width = b.dataset.width + '%');
+    }, 150);
+
+    document.getElementById('last-update-time').textContent = formatTime(new Date().toISOString());
+    setTimeout(loadData, 60000);
+  }
+</script>
+</body>
+</html>
