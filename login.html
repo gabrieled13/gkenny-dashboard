@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>G·KENNY OS — ACCESS</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    :root {
+      --bg: #020408;
+      --surface: #060d14;
+      --cyan: #00fff9;
+      --pink: #ff006e;
+      --yellow: #f9f002;
+      --green: #00ff41;
+      --dim: #0a1a2e;
+      --border-cyan: rgba(0,255,249,0.2);
+      --border-pink: rgba(255,0,110,0.2);
+      --text: #c8e6ff;
+      --muted: #2a4a6a;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      min-height: 100vh;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* GRID BACKGROUND */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,249,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,249,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* SCAN LINE */
+    body::after {
+      content: '';
+      position: fixed;
+      top: -100%;
+      left: 0;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+      animation: scan 4s linear infinite;
+      z-index: 1;
+      opacity: 0.3;
+    }
+
+    @keyframes scan {
+      0% { top: -2px; }
+      100% { top: 100vh; }
+    }
+
+    .container {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      max-width: 440px;
+      padding: 20px;
+    }
+
+    /* HEADER */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 900;
+      color: var(--cyan);
+      text-shadow: 0 0 30px rgba(0,255,249,0.6), 0 0 60px rgba(0,255,249,0.2);
+      letter-spacing: 4px;
+      animation: flicker 6s infinite;
+    }
+
+    @keyframes flicker {
+      0%, 95%, 100% { opacity: 1; }
+      96% { opacity: 0.7; }
+      97% { opacity: 1; }
+      98% { opacity: 0.5; }
+      99% { opacity: 1; }
+    }
+
+    .subtitle {
+      font-size: 0.75rem;
+      color: var(--muted);
+      letter-spacing: 3px;
+      margin-top: 6px;
+      text-transform: uppercase;
+    }
+
+    .access-tag {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 4px 12px;
+      border: 1px solid var(--border-cyan);
+      color: var(--cyan);
+      font-size: 0.65rem;
+      letter-spacing: 2px;
+      background: rgba(0,255,249,0.05);
+    }
+
+    /* CARD */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border-cyan);
+      padding: 36px 32px;
+      position: relative;
+      box-shadow: 0 0 40px rgba(0,255,249,0.05), inset 0 1px 0 rgba(0,255,249,0.1);
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    }
+
+    .card-label {
+      font-size: 0.65rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+      margin-bottom: 28px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border-cyan);
+    }
+
+    /* FORM */
+    .field {
+      margin-bottom: 20px;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.65rem;
+      color: var(--cyan);
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .field input {
+      width: 100%;
+      background: var(--dim);
+      border: 1px solid var(--border-cyan);
+      color: var(--text);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.9rem;
+      padding: 12px 16px;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .field input:focus {
+      border-color: var(--cyan);
+      box-shadow: 0 0 15px rgba(0,255,249,0.15);
+    }
+
+    .field input::placeholder {
+      color: var(--muted);
+    }
+
+    /* BUTTON */
+    .btn {
+      width: 100%;
+      background: transparent;
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-family: 'Share Tech Mono', monospace;
+      font-size: 0.85rem;
+      letter-spacing: 3px;
+      padding: 14px;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: all 0.2s;
+      text-transform: uppercase;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,255,249,0.08);
+      transition: left 0.3s;
+    }
+
+    .btn:hover::before { left: 0; }
+    .btn:hover {
+      box-shadow: 0 0 20px rgba(0,255,249,0.2);
+      text-shadow: 0 0 10px var(--cyan);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* MESSAGE */
+    .msg {
+      margin-top: 16px;
+      padding: 10px 14px;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      display: none;
+    }
+
+    .msg.error {
+      display: block;
+      border: 1px solid rgba(255,0,110,0.4);
+      color: var(--pink);
+      background: rgba(255,0,110,0.05);
+    }
+
+    .msg.success {
+      display: block;
+      border: 1px solid rgba(0,255,65,0.4);
+      color: var(--green);
+      background: rgba(0,255,65,0.05);
+    }
+
+    /* FOOTER */
+    .footer {
+      text-align: center;
+      margin-top: 24px;
+      font-size: 0.6rem;
+      color: var(--muted);
+      letter-spacing: 2px;
+    }
+
+    /* CORNERS */
+    .card .corner {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      border-color: var(--cyan);
+      border-style: solid;
+      opacity: 0.5;
+    }
+    .card .corner.tl { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+    .card .corner.tr { top: -1px; right: -1px; border-width: 2px 2px 0 0; }
+    .card .corner.bl { bottom: -1px; left: -1px; border-width: 0 0 2px 2px; }
+    .card .corner.br { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+    /* LOADING */
+    .loading {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(0,255,249,0.2);
+      border-top-color: var(--cyan);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 8px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="logo">G·KENNY</div>
+    <div class="subtitle">Neural Core OS</div>
+    <div class="access-tag">// RESTRICTED ACCESS</div>
+  </div>
+
+  <div class="card">
+    <div class="corner tl"></div>
+    <div class="corner tr"></div>
+    <div class="corner bl"></div>
+    <div class="corner br"></div>
+
+    <div class="card-label">// AUTHENTICATION_REQUIRED</div>
+
+    <div class="field">
+      <label>// EMAIL</label>
+      <input type="email" id="email" placeholder="operator@gkenny.app" autocomplete="email">
+    </div>
+
+    <div class="field">
+      <label>// PASSWORD</label>
+      <input type="password" id="password" placeholder="••••••••••••" autocomplete="current-password">
+    </div>
+
+    <button class="btn" id="login-btn" onclick="handleLogin()">
+      INICIAR SESIÓN
+    </button>
+
+    <div class="msg" id="msg"></div>
+  </div>
+
+  <div class="footer">G·KENNY OS v3.0 &nbsp;///&nbsp; CONFIDENTIAL</div>
+</div>
+
+<script>
+  // ── CONFIGURACIÓN ──────────────────────────────────────────
+  // Reemplaza con tus credenciales de Supabase
+  const SUPABASE_URL  = 'https://qdwdfzhuhhwgjcsxrwho.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkd2Rmemh1aGh3Z2pjc3hyd2hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4NDUwNTcsImV4cCI6MjA4ODQyMTA1N30.34dAKU9uHZcR1HrJUFEDbaitNlSqXaw4Rw9tPi7SUVg';
+  // ───────────────────────────────────────────────────────────
+
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  // Si ya hay sesión activa, redirige al dashboard
+  sb.auth.getSession().then(({ data }) => {
+    if (data.session) window.location.href = 'index.html';
+  });
+
+  const emailEl  = document.getElementById('email');
+  const passEl   = document.getElementById('password');
+  const btn      = document.getElementById('login-btn');
+  const msgEl    = document.getElementById('msg');
+
+  // Enter para hacer login
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleLogin();
+  });
+
+  function showMsg(text, type) {
+    msgEl.textContent = text;
+    msgEl.className = `msg ${type}`;
+  }
+
+  async function handleLogin() {
+    const email    = emailEl.value.trim();
+    const password = passEl.value;
+
+    if (!email || !password) {
+      showMsg('> ERROR: Ingresa email y password', 'error');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading"></span> AUTENTICANDO...';
+    msgEl.className = 'msg';
+
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+
+    if (error) {
+      showMsg('> ACCESS DENIED: ' + error.message, 'error');
+      btn.disabled = false;
+      btn.innerHTML = 'INICIAR SESIÓN';
+    } else {
+      showMsg('> ACCESS GRANTED — LOADING NEURAL CORE...', 'success');
+      setTimeout(() => window.location.href = 'index.html', 800);
+    }
+  }
+</script>
+</body>
+</html>
