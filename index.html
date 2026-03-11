@@ -275,32 +275,34 @@
   </div>
 
 </div>
-<script>
-  let SUPABASE_URL = '', SUPABASE_KEY = '';
 
+Index script replacement · HTML
+Copiar
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  // ── CREDENCIALES ────────────────────────────────────────────
+  const SUPABASE_URL = 'https://qdwdfzhuhhwgjcsxrwho.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFkd2Rmemh1aGh3Z2pjc3hyd2hvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI4NDUwNTcsImV4cCI6MjA4ODQyMTA1N30.34dAKU9uHZcR1HrJUFEDbaitNlSqXaw4Rw9tPi7SUVg';
+  // ───────────────────────────────────────────────────────────
+
+  const { createClient } = supabase;
+  const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // PROTECCIÓN — si no hay sesión activa, manda al login
+  sb.auth.getSession().then(({ data }) => {
+    if (!data.session) {
+      window.location.href = 'login.html';
+    } else {
+      loadData();
+    }
+  });
+
+  // RELOJ
   setInterval(() => {
     const now = new Date();
     document.getElementById('sys-time').textContent = now.toUTCString().split(' ')[4] + ' UTC';
   }, 1000);
-
-  try {
-    const saved = localStorage.getItem('gkenny-config');
-    if (saved) {
-      const cfg = JSON.parse(saved);
-      SUPABASE_URL = cfg.url; SUPABASE_KEY = cfg.key;
-      document.getElementById('supabase-url').value = SUPABASE_URL;
-      document.getElementById('supabase-key').value = SUPABASE_KEY;
-      loadData();
-    }
-  } catch(e) {}
-
-  function connectAndLoad() {
-    SUPABASE_URL = document.getElementById('supabase-url').value.trim();
-    SUPABASE_KEY = document.getElementById('supabase-key').value.trim();
-    if (!SUPABASE_URL || !SUPABASE_KEY) return;
-    try { localStorage.setItem('gkenny-config', JSON.stringify({ url: SUPABASE_URL, key: SUPABASE_KEY })); } catch(e) {}
-    loadData();
-  }
 
   async function loadData() {
     try {
@@ -327,7 +329,9 @@
   }
 
   function renderDashboard(agents) {
-    document.getElementById('config-panel').style.display = 'none';
+    // Oculta config panel si existe, muestra todo
+    const cfg = document.getElementById('config-panel');
+    if (cfg) cfg.style.display = 'none';
     document.getElementById('stats-row').style.display = 'grid';
     document.getElementById('agents-section').style.display = 'block';
     document.getElementById('footer').style.display = 'flex';
